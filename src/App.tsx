@@ -3,9 +3,11 @@ import { useRoutes, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "./components/auth/AuthProvider";
 import Home from "./components/home";
 import SignupFlow from "./components/auth/SignupFlow";
+import SignInFlow from "./components/auth/SignInFlow";
 import OrganizationSetup from "./components/organization/OrganizationSetup";
 import SurveyCreationFlow from "./components/survey/SurveyCreationFlow";
 import SurveyResponse from "./components/survey/SurveyResponse";
+import Dashboard from "./components/dashboard/Dashboard";
 import routes from "tempo-routes";
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
@@ -30,6 +32,7 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/signup" element={<SignupFlow />} />
+            <Route path="/signin" element={<SignInFlow />} />
             <Route
               path="/organization/setup"
               element={
@@ -47,6 +50,14 @@ function App() {
               }
             />
             <Route path="/survey/:surveyId" element={<SurveyResponse />} />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
           </Routes>
           {import.meta.env.VITE_TEMPO === "true" && useRoutes(routes)}
         </>

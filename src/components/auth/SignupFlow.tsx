@@ -1,15 +1,14 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { supabase } from "@/lib/supabase";
 import {
   Select,
@@ -18,6 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import VerificationSuccess from "./VerificationSuccess";
 
 type Step = "personal" | "organization" | "account" | "verification";
 
@@ -81,17 +81,22 @@ const SignupFlow = () => {
   });
 
   const handleNext = async (data: any) => {
-    setFormData((prev: any) => ({ ...prev, ...data }));
+    const newFormData = { ...formData, ...data };
+    setFormData(newFormData);
 
     if (currentStep === "account") {
       try {
-        const { error } = await supabase.auth.signUp({
+        // First create the user
+        const { data: signUpData, error } = await supabase.auth.signUp({
           email: data.email,
           password: data.password,
           options: {
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
             data: {
-              ...formData,
-              ...data,
+              first_name: formData.firstName,
+              last_name: formData.lastName,
+              job_title: formData.jobTitle,
+              organization_name: formData.organization,
             },
           },
         });
@@ -100,15 +105,18 @@ const SignupFlow = () => {
 
         setCurrentStep("verification");
         toast({
-          title: "Vérification requise",
-          description: "Veuillez vérifier votre courriel pour continuer.",
+          title: "Compte créé avec succès",
+          description:
+            "Veuillez vérifier votre boîte de réception pour confirmer votre email.",
         });
       } catch (error: any) {
+        console.error("Signup error:", error);
         toast({
           title: "Erreur",
           description: error.message,
           variant: "destructive",
         });
+        return;
       }
     } else {
       setCurrentStep(
@@ -130,6 +138,13 @@ const SignupFlow = () => {
           : "personal",
     );
   };
+
+  const steps: { id: Step; title: string }[] = [
+    { id: "personal", title: "Personnel" },
+    { id: "organization", title: "Organisation" },
+    { id: "account", title: "Compte" },
+    { id: "verification", title: "Vérification" },
+  ];
 
   const renderStep = () => {
     switch (currentStep) {
@@ -555,13 +570,10 @@ const SignupFlow = () => {
 
       case "verification":
         return (
-          <div className="text-center space-y-4">
-            <h2 className="text-2xl font-bold">Vérifiez votre courriel</h2>
-            <p className="text-gray-500">
-              Nous avons envoyé un lien de vérification à votre adresse
-              courriel. Veuillez cliquer sur ce lien pour activer votre compte.
-            </p>
-          </div>
+          <VerificationSuccess
+            email={formData.email}
+            onContinue={() => navigate("/dashboard")}
+          />
         );
     }
   };

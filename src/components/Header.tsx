@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button";
 import {
   NavigationMenu,
@@ -24,6 +25,7 @@ const Header = ({
   userAvatar = "https://api.dicebear.com/7.x/avataaars/svg?seed=default",
 }: HeaderProps) => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
 
   return (
     <header className="w-full h-20 px-6 bg-white/80 backdrop-blur-sm border-b border-gray-200 flex items-center justify-between fixed top-0 z-50">
@@ -93,7 +95,7 @@ const Header = ({
           </div>
         ) : (
           <>
-            <Button variant="ghost" onClick={() => navigate("/signup")}>
+            <Button variant="ghost" onClick={() => navigate("/signin")}>
               {t("nav.signIn")}
             </Button>
             <Button onClick={() => navigate("/signup")}>
